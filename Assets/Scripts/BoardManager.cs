@@ -1,69 +1,42 @@
+using System;
+using Unity.Mathematics;
 using UnityEngine;
 
 public class BoardManager : Singleton<BoardManager>
 {
-    public int width = 15;
-    public int height = 15;
-    //public GameObject stonePrefab;
+    private bool isBlackTurn = true;
 
-    private int[,] board;
-
-    private GameObject blackStonePrefab;
-    private GameObject whiteStonePrefab;
-
-    private void Start()
+    private void Update()
     {
-        blackStonePrefab = Resources.Load<GameObject>("Prefabs/R_Black");
-        whiteStonePrefab = Resources.Load<GameObject>("Prefabs/R_White");
-
-        UIManager.GetInstance().CreateGomokuBoard(width, height);
+        if (Input.GetMouseButtonDown(0))
+        {
+            Vector2 clickPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            PlaceStone(clickPos);
+            isBlackTurn = !isBlackTurn;
+        }
     }
 
-
-    public bool PlaceStone(int x, int y, int player)
+    private void PlaceStone(Vector2 clickedPosition)
     {
-        if (x < 0 || x >= width || y < 0 || y >= height)
-        {
-            Debug.LogError("거기엔 둘 수 없습니다.");
-            return false;
-        }
-
-        if (board[x, y] != 0)
-        {
-            Debug.LogError("해당 칸은 이미 사용 중입니다.");
-            return false;
-        }
-
-        board[x, y] = player;
-        InstantiateStone(x, y, player);
-
-        return true;
+        Vector2 gridPosition = GetNearestPointOnGrid(clickedPosition);
+        string prefabPath = isBlackTurn ? "Prefabs/R_Black" : "Prefabs/R_White";
+        GameObject stonePrefab = Resources.Load<GameObject>(prefabPath);
+        Instantiate(stonePrefab, gridPosition, Quaternion.identity);
     }
 
-    private void InstantiateStone(int x, int y, int player)
+    private Vector2 GetNearestPointOnGrid(Vector2 clickedPosition)
     {
-        //돌 넣을 위치 계산
-        Vector3 position = GetWorldPosition(x, y);
+        int gridX = Mathf.RoundToInt(clickedPosition.x);
+        int gridY = Mathf.RoundToInt(clickedPosition.y);
 
-        GameObject stonePrefab = (player == 1) ? blackStonePrefab : whiteStonePrefab;
-        GameObject stone = Instantiate(stonePrefab, position, Quaternion.identity);
-        stone.transform.parent = transform;
+        gridX = Mathf.Clamp(gridX, 0, 14);
+        gridY = Mathf.Clamp(gridY, 0, 14);
 
-        if (player == 1)
-        {
-            //플레이어 1의 돌 외관 설정
-        }
+        Vector2 gridPosition = new Vector2(gridX, gridY);
 
-        else if (player == 2)
-        {
-            //플레이어 2의 돌 외관 설정
-        }
-
+        return gridPosition;
     }
 
-    private Vector3 GetWorldPosition(int x, int y)
-    {
-        //보드 좌표 월드 위치 변환
-        return new Vector3(x, y, 0);
-    }
+    //만약 gridX,Y 범위 밖으로 나간다면(Mathf.Clamp)범위를 벗어난다면 Debug.ErrorLog("그곳은 불가능합니다")
+    //현재 0,0부터 오목판이 되고있는데, 
 }
