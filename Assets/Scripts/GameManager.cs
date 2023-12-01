@@ -3,15 +3,17 @@ using UnityEngine;
 
 public class GameManager : Singleton<GameManager>
 {
-    //그리드 격자를 15x15로 생성한다.
-
     //그리드의 크기는 GameObject(SpriteRenderer) 바둑판 이미지에 맞춰 생성한다.
     public SpriteRenderer boardRenderer;    //바둑판 spr
-    private Vector2[,] gridPosition;    //격자
+    public GameObject stonePrefab;
+    private Vector2[,] gridPosition;        //격자
+    private GameObject[,] placedStones;     //돌 추적
+    private int player;
 
     private void Awake()
     {
         InitializeGrid();
+        placedStones = new GameObject[15, 15];
     }
 
     #region Init
@@ -73,5 +75,41 @@ public class GameManager : Singleton<GameManager>
 
         int closestX = -1;
         int closestY = -1;
+
+        float closetDistance = Mathf.Infinity;
+
+        //가장 가까운 격자 위치 찾기
+        for (int i = 0; i < 15; i++)
+        {
+            for (int j = 0; j < 15; j++)
+            {
+                float distance = Vector2.Distance(mouseWorldPosition, gridPosition[i, j]);
+
+                if (distance < closetDistance)
+                {
+                    closestX = i;
+                    closestY = j;
+                    closetDistance = distance;
+                }
+            }
+        }
+
+        if (placedStones[closestX, closestY] == null)
+        {
+            GameObject stonePrefab;
+
+            //if (player == 1)
+            //{
+            //    stonePrefab = Resources.Load<GameObject>("Prefabs/R_Black");
+            //}
+            //else
+            //{
+            //    stonePrefab = Resources.Load<GameObject>("Prefabs/R_White");
+            //}
+
+            stonePrefab = Resources.Load<GameObject>("Prefabs/R_Black");
+            GameObject newStone = Instantiate(stonePrefab, gridPosition[closestX, closestY], Quaternion.identity);
+            placedStones[closestX, closestY] = newStone;
+        }
     }
 }

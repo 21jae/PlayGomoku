@@ -153,6 +153,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   boardRenderer: {fileID: 2145638903}
+  stonePrefab: {fileID: 5714956667241261487, guid: 716a3a068e43b41409d038a17e29868d, type: 3}
 --- !u!4 &74810992
 Transform:
   m_ObjectHideFlags: 0
