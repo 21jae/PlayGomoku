@@ -195,7 +195,8 @@ public class GameManager : MonoBehaviourPunCallbacks
     [PunRPC]
     public void PlaceStone(int x, int y, int playerNumber)
     {
-        string stonePath = playerNumber == 1 ? "Prefabs/R_Black" : "Prefabs/R_White";
+        //string stonePath = playerNumber == 1 ? "Prefabs/R_Black" : "Prefabs/R_White";
+        string stonePath = playerNumber == 1 ? "Prefabs/Ingame_Slime" : "Prefabs/Ingame_Yeti";
         GameObject stonePrefab = Resources.Load<GameObject>(stonePath);
         GameObject newStone = Instantiate(stonePrefab, gridPosition[x, y], Quaternion.identity);
         placedStones[x, y] = newStone;
