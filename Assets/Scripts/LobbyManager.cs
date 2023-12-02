@@ -25,7 +25,7 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     /// 생성된 방을 클릭했을때 호출
     /// 필드에 입력된 텍스트가 1자 이상일때만 새로운 방을 생성한다.
     /// </summary>
-    public void OnClickCreate() 
+    public void OnClickCreate()
     {
         if (roomInputField.text.Length >= 1)
         {
@@ -44,7 +44,7 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         roomPanel.SetActive(true);
         roomName.text = "Room Name: " + PhotonNetwork.CurrentRoom.Name;
     }
-    
+
     /// <summary>
     /// 방 목록이 업데이트 될 때마다 호출되며, UpdateRoomList()를 통해 UI 방목록을 새로 고침한다.
     /// </summary>
