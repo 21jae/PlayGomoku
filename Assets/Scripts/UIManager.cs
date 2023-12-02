@@ -1,3 +1,4 @@
+using Photon.Pun;
 using UnityEngine;
 
 public class UIManager : MonoBehaviour
@@ -21,5 +22,10 @@ public class UIManager : MonoBehaviour
 
         else
             Debug.LogError("GM reference is null");
+    }
+
+    public void OnClickLeaveRoom()
+    {
+        PhotonNetwork.LeaveRoom();
     }
 }

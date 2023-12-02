@@ -111,10 +111,10 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     /// <summary>
     /// 방을 떠날때 호출
     /// </summary>
-    public void OnClickLeaveRoom()
-    {
-        PhotonNetwork.LeaveRoom();
-    }
+    //public void OnClickLeaveRoom()
+    //{
+    //    PhotonNetwork.LeaveRoom();
+    //}
 
     /// <summary>
     /// 방을 떠났을대 패널 비활성화 활성화

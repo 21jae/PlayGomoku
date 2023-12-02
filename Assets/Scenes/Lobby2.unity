@@ -791,7 +791,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7f6fbe6038931b04db59a716001b4454, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentState: 0
   boardRenderer: {fileID: 681663076}
   player: 0
 --- !u!4 &566006454
@@ -2274,8 +2273,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 363431833}
-        m_TargetAssemblyTypeName: LobbyManager, Assembly-CSharp
+      - m_Target: {fileID: 440892860}
+        m_TargetAssemblyTypeName: UIManager, Assembly-CSharp
         m_MethodName: OnClickLeaveRoom
         m_Mode: 1
         m_Arguments:

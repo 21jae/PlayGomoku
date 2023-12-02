@@ -135,7 +135,7 @@ public class GameManager : MonoBehaviourPunCallbacks
 
 
 
-    #region 준비상태 
+    #region 게임 준비 상태 
     public void SetReadyState()
     {
         currentState = GameState.READY;
@@ -155,16 +155,6 @@ public class GameManager : MonoBehaviourPunCallbacks
             CheckAllPlayersReady();
     }
 
-    [PunRPC]
-    public void PlayerReady(int playerID)
-    {
-        playerReadyStatus[playerID] = true;
-        Debug.Log($"Player {playerID} is ready");
-
-        if (PhotonNetwork.IsMasterClient)
-            CheckAllPlayersReady();
-    }
-
     private void CheckAllPlayersReady()
     {
         foreach (var player in playerReadyStatus)
@@ -178,7 +168,7 @@ public class GameManager : MonoBehaviourPunCallbacks
     }
     #endregion
 
-    //게임 시작
+    #region 게임 진행 상태
     private void StartGame()
     {
         currentState = GameState.PLAYING;
@@ -186,21 +176,10 @@ public class GameManager : MonoBehaviourPunCallbacks
         currentPlayerTurn = 1;
     }
 
-    [PunRPC]
-    public void SetGameState(GameState state)
-    {
-        currentState = state;
-    }
+    //내일 해야할것.
+    //게임 진행중일때 UIManager에서 호출하는 OnReadyButtonClicked, OnClickLeaveRoom 둘다 클릭 불가능
+    //오로지 대기(Ready)상태일때만 가능하다.
 
-    [PunRPC]
-    public void PlaceStone(int x, int y, int playerNumber)
-    {
-        //string stonePath = playerNumber == 1 ? "Prefabs/R_Black" : "Prefabs/R_White";
-        string stonePath = playerNumber == 1 ? "Prefabs/Ingame_Slime" : "Prefabs/Ingame_Yeti";
-        GameObject stonePrefab = Resources.Load<GameObject>(stonePath);
-        GameObject newStone = Instantiate(stonePrefab, gridPosition[x, y], Quaternion.identity);
-        placedStones[x, y] = newStone;
-    }
 
     private void PlaceStoneAtMousePosition()
     {
@@ -242,16 +221,40 @@ public class GameManager : MonoBehaviourPunCallbacks
         //턴을 다음 플레이어로 변경
         currentPlayerTurn = currentPlayerTurn == 1 ? 2 : 1;
         photonView.RPC("UpdateCurrentTurn", RpcTarget.All, currentPlayerTurn);
-        
+
         Debug.Log($"지금은 {currentPlayerTurn}의 턴입니다.");
     }
+    #endregion
+
+    #region PunRPC
+
+    [PunRPC] public void SetGameState(GameState state) => currentState = state;
+    [PunRPC] public void UpdateCurrentTurn(int newTurn) => currentPlayerTurn = newTurn;
+
 
     [PunRPC]
-    public void UpdateCurrentTurn(int newTurn)
+    public void PlayerReady(int playerID)
     {
-        currentPlayerTurn = newTurn;
+        playerReadyStatus[playerID] = true;
+        Debug.Log($"Player {playerID} is ready");
+
+        if (PhotonNetwork.IsMasterClient)
+            CheckAllPlayersReady();
     }
 
+
+    [PunRPC]
+    public void PlaceStone(int x, int y, int playerNumber)
+    {
+        string stonePath = playerNumber == 1 ? "Prefabs/Ingame_Slime" : "Prefabs/Ingame_Yeti";
+        GameObject stonePrefab = Resources.Load<GameObject>(stonePath);
+        GameObject newStone = Instantiate(stonePrefab, gridPosition[x, y], Quaternion.identity);
+        placedStones[x, y] = newStone;
+    }
+
+    #endregion
+
+    #region InGameConsole
     public void CheckPlayer2Turn()
     {
         if (currentPlayerTurn == 2)
@@ -259,18 +262,15 @@ public class GameManager : MonoBehaviourPunCallbacks
             // 인게임 콘솔의 인스턴스를 찾고 CheckPlayer2CanPlaceStone 메서드를 호출
             InGameConsole console = FindObjectOfType<InGameConsole>();
             if (console != null)
-            {
                 console.CheckPlayer2CanPlaceStone(true);
-            }
         }
         else
         {
             InGameConsole console = FindObjectOfType<InGameConsole>();
             if (console != null)
-            {
                 console.CheckPlayer2CanPlaceStone(false);
-            }
         }
     }
+    #endregion
 }
 
