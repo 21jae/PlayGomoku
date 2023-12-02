@@ -1,19 +1,23 @@
+using Photon.Pun;
 using System;
 using UnityEngine;
 
-public class GameManager : Singleton<GameManager>
+public class GameManager : MonoBehaviourPunCallbacks
 {
-    //그리드의 크기는 GameObject(SpriteRenderer) 바둑판 이미지에 맞춰 생성한다.
+    [HideInInspector] public int player;
     public SpriteRenderer boardRenderer;    //바둑판 spr
-    public GameObject stonePrefab;
     private Vector2[,] gridPosition;        //격자
     private GameObject[,] placedStones;     //돌 추적
-    private int player;
+
+    private PhotonView photonView;
+
 
     private void Awake()
     {
         InitializeGrid();
+
         placedStones = new GameObject[15, 15];
+        photonView = GetComponent<PhotonView>();
     }
 
     #region Init
@@ -69,6 +73,15 @@ public class GameManager : Singleton<GameManager>
         }
     }
 
+    [PunRPC]
+    public void PlaceStone(int x, int y, int playerNumber)
+    {
+        string stonePath = playerNumber == 1 ? "Prefabs/R_Black" : "Prefabs/R_White";
+        GameObject stonePrefab = Resources.Load<GameObject>(stonePath);
+        GameObject newStone = Instantiate(stonePrefab, gridPosition[x, y], Quaternion.identity);
+        placedStones[x, y] = newStone;
+    }
+
     private void PlaceStoneAtMousePosition()
     {
         Vector2 mouseWorldPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
@@ -96,20 +109,7 @@ public class GameManager : Singleton<GameManager>
 
         if (placedStones[closestX, closestY] == null)
         {
-            GameObject stonePrefab;
-
-            //if (player == 1)
-            //{
-            //    stonePrefab = Resources.Load<GameObject>("Prefabs/R_Black");
-            //}
-            //else
-            //{
-            //    stonePrefab = Resources.Load<GameObject>("Prefabs/R_White");
-            //}
-
-            stonePrefab = Resources.Load<GameObject>("Prefabs/R_Black");
-            GameObject newStone = Instantiate(stonePrefab, gridPosition[closestX, closestY], Quaternion.identity);
-            placedStones[closestX, closestY] = newStone;
+            photonView.RPC("PlaceStone", RpcTarget.All, closestX, closestY, player);
         }
     }
 }

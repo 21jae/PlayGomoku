@@ -7,6 +7,8 @@ using System;
 
 public class LobbyManager : MonoBehaviourPunCallbacks
 {
+    public GameManager gm;
+
     public InputField roomInputField;
     public GameObject lobbyPanel;
     public GameObject roomPanel;
@@ -15,6 +17,10 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     public RoomItem roomItemPrefab;
     List<RoomItem> roomItemsList = new List<RoomItem>();
     public Transform contentObject;
+
+    public List<PlayerItem> playerItemsList = new List<PlayerItem>();
+    public PlayerItem playerItemPrefab;
+    public Transform playerItemParent;
 
     private void Start()
     {
@@ -42,7 +48,10 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     {
         lobbyPanel.SetActive(false);
         roomPanel.SetActive(true);
+
+        gm.player = PhotonNetwork.IsMasterClient ? 1 : 2;
         roomName.text = "Room Name: " + PhotonNetwork.CurrentRoom.Name;
+        UpdatePlayerList();
     }
 
     /// <summary>
@@ -111,6 +120,41 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     public override void OnConnectedToMaster()
     {
         PhotonNetwork.JoinLobby();
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    private void UpdatePlayerList()
+    {
+        //이전 항목 지워주기
+        foreach (PlayerItem item in playerItemsList)
+        {
+            Destroy(item.gameObject);
+        }
+        playerItemsList.Clear();
+
+        //항목별로 생성
+
+        //방 있는지 확인
+        if (PhotonNetwork.CurrentRoom == null)
+            return;
+
+        foreach (KeyValuePair<int, Player> player in PhotonNetwork.CurrentRoom.Players)
+        {
+            PlayerItem newPlayerItem = Instantiate(playerItemPrefab, playerItemParent);
+            newPlayerItem.SetPlayerInfo(player.Value);
+            playerItemsList.Add(newPlayerItem);
+        }
+    }
+    public override void OnPlayerEnteredRoom(Player newPlayer)
+    {
+        UpdatePlayerList();
+    }
+
+    public override void OnPlayerLeftRoom(Player otherPlayer)
+    {
+        UpdatePlayerList();
     }
 
 
