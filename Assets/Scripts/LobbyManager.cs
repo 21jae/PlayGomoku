@@ -46,12 +46,23 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     /// </summary>
     public override void OnJoinedRoom()
     {
+        if (PhotonNetwork.IsMasterClient)
+        {
+            Debug.Log("현재 플레이어는 마스터 클라이언트입니다.");
+        }
+        else
+        {
+            Debug.Log("현재 플레이어는 마스터 클라이언트가 아닙니다.");
+        }
+
         lobbyPanel.SetActive(false);
         roomPanel.SetActive(true);
 
         gm.player = PhotonNetwork.IsMasterClient ? 1 : 2;
         roomName.text = "Room Name: " + PhotonNetwork.CurrentRoom.Name;
         UpdatePlayerList();
+
+        gm.InitializePlayerReadyStatus();
     }
 
     /// <summary>

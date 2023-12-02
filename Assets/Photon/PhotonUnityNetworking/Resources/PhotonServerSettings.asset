@@ -40,6 +40,10 @@ MonoBehaviour:
   - Fire
   - RespawnSpaceship
   - PlaceStone
+  - PlayerReady
+  - ChangeGameState
+  - SetGameState
+  - UpdateCurrentTurn
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 1

@@ -1,24 +1,58 @@
 using Photon.Pun;
-using System;
+using System.Collections.Generic;
 using UnityEngine;
+
+public enum GameState
+{
+    READY,
+    PLAYING,
+    GAMEOVER
+}
 
 public class GameManager : MonoBehaviourPunCallbacks
 {
-    [HideInInspector] public int player;
-    public SpriteRenderer boardRenderer;    //바둑판 spr
-    private Vector2[,] gridPosition;        //격자
-    private GameObject[,] placedStones;     //돌 추적
+    static private GameManager _instance = null;
+    static public GameManager GetInstance() { return _instance; }
+
+    private GameState _currentState;
+    public GameState currentState
+    {
+        get => _currentState;
+        set
+        {
+            if (_currentState == value) return; // 상태가 실제로 변경될 때만 로그 출력
+
+            Debug.Log($"GameState 변경됨: {_currentState} -> {value}");
+            _currentState = value;
+        }
+    }
 
     private PhotonView photonView;
+
+    public SpriteRenderer boardRenderer;    //바둑판 spr
+    private Vector2[,] gridPosition;        //격자
+
+    private Dictionary<int, bool> playerReadyStatus = new Dictionary<int, bool>();
+    private GameObject[,] placedStones;     //돌 추적
+    [HideInInspector] public int player;
+    private int currentPlayerTurn;
+
+
 
 
     private void Awake()
     {
         InitializeGrid();
 
-        placedStones = new GameObject[15, 15];
         photonView = GetComponent<PhotonView>();
+        _instance = this;
     }
+
+    private void Start()
+    {
+        placedStones = new GameObject[15, 15];
+    }
+
 
     #region Init
     private void InitializeGrid()
@@ -36,7 +70,7 @@ public class GameManager : MonoBehaviourPunCallbacks
 
         Vector3 boardPosition = boardRenderer.transform.position;
 
-        for (int i = 0; i < gridSize;  i++)
+        for (int i = 0; i < gridSize; i++)
         {
             for (int j = 0; j < gridSize; j++)
             {
@@ -63,7 +97,33 @@ public class GameManager : MonoBehaviourPunCallbacks
             }
         }
     }
+
+    private void InitializeGame()
+    {
+        for (int i = 0; i < placedStones.GetLength(0); i++)
+        {
+            for (int j = 0; j < placedStones.GetLength(1); j++)
+            {
+                if (placedStones[i, j] != null)
+                {
+                    Destroy(placedStones[i, j]);
+                    placedStones[i, j] = null;
+                }
+            }
+        }
+    }
+
+    public void InitializePlayerReadyStatus()
+    {
+        playerReadyStatus.Clear();
+        foreach (var player in PhotonNetwork.CurrentRoom.Players)
+        {
+            playerReadyStatus[player.Key] = false;
+        }
+    }
+
     #endregion
+
 
     private void Update()
     {
@@ -71,6 +131,65 @@ public class GameManager : MonoBehaviourPunCallbacks
         {
             PlaceStoneAtMousePosition();
         }
+    }
+
+
+
+    #region 준비상태 
+    public void SetReadyState()
+    {
+        currentState = GameState.READY;
+        InitializeGame();
+    }
+
+    public void OnPlayerReady()
+    {
+        int localPlayerID = PhotonNetwork.LocalPlayer.ActorNumber;
+        playerReadyStatus[localPlayerID] = true;
+
+        //모든 클라이언트에 READY 상태 전파
+        photonView.RPC("PlayerReady", RpcTarget.All, localPlayerID);
+
+        // 마스터 클라이언트가 모든 플레이어의 준비 상태 확인
+        if (PhotonNetwork.IsMasterClient)
+            CheckAllPlayersReady();
+    }
+
+    [PunRPC]
+    public void PlayerReady(int playerID)
+    {
+        playerReadyStatus[playerID] = true;
+        Debug.Log($"Player {playerID} is ready");
+
+        if (PhotonNetwork.IsMasterClient)
+            CheckAllPlayersReady();
+    }
+
+    private void CheckAllPlayersReady()
+    {
+        foreach (var player in playerReadyStatus)
+        {
+            if (!player.Value)
+                return;
+        }
+
+        if (PhotonNetwork.IsMasterClient)
+            StartGame();
+    }
+    #endregion
+
+    //게임 시작
+    private void StartGame()
+    {
+        currentState = GameState.PLAYING;
+        photonView.RPC("SetGameState", RpcTarget.All, GameState.PLAYING);
+        currentPlayerTurn = 1;
+    }
+
+    [PunRPC]
+    public void SetGameState(GameState state)
+    {
+        currentState = state;
     }
 
     [PunRPC]
@@ -84,6 +203,9 @@ public class GameManager : MonoBehaviourPunCallbacks
 
     private void PlaceStoneAtMousePosition()
     {
+        if (currentState != GameState.PLAYING || player != currentPlayerTurn)
+            return;
+
         Vector2 mouseWorldPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 
         int closestX = -1;
@@ -110,6 +232,44 @@ public class GameManager : MonoBehaviourPunCallbacks
         if (placedStones[closestX, closestY] == null)
         {
             photonView.RPC("PlaceStone", RpcTarget.All, closestX, closestY, player);
+            ChangeTurn();
+        }
+    }
+
+    private void ChangeTurn()
+    {
+        //턴을 다음 플레이어로 변경
+        currentPlayerTurn = currentPlayerTurn == 1 ? 2 : 1;
+        photonView.RPC("UpdateCurrentTurn", RpcTarget.All, currentPlayerTurn);
+        
+        Debug.Log($"지금은 {currentPlayerTurn}의 턴입니다.");
+    }
+
+    [PunRPC]
+    public void UpdateCurrentTurn(int newTurn)
+    {
+        currentPlayerTurn = newTurn;
+    }
+
+    public void CheckPlayer2Turn()
+    {
+        if (currentPlayerTurn == 2)
+        {
+            // 인게임 콘솔의 인스턴스를 찾고 CheckPlayer2CanPlaceStone 메서드를 호출
+            InGameConsole console = FindObjectOfType<InGameConsole>();
+            if (console != null)
+            {
+                console.CheckPlayer2CanPlaceStone(true);
+            }
+        }
+        else
+        {
+            InGameConsole console = FindObjectOfType<InGameConsole>();
+            if (console != null)
+            {
+                console.CheckPlayer2CanPlaceStone(false);
+            }
         }
     }
 }
+
