@@ -1,5 +1,5 @@
 using Photon.Pun;
-using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -35,25 +35,27 @@ public class GameManager : MonoBehaviourPunCallbacks
 
 
     private GameState currentState;
-    //public GameState CurrentState { get; private set; }
 
     private static int GRID_SIZE = 15;
 
     private PhotonView photonView;
 
     [SerializeField] private SpriteRenderer boardRenderer;
-    private Vector2[,] gridPosition;        //격자
-
     private Dictionary<int, bool> playerReadyStatus = new Dictionary<int, bool>();
-    private GameObject[,] placedStones;     //돌 추적
+
+    private Vector2[,] gridPosition;            //격자
+    private GameObject[,] stoneObjects;         //바둑알 추적
+    private int[,] placedStones;                //바둑알 플레이어 번호 저장
     public int player { get; set; }
     private int currentPlayerTurn;
 
 
     private void Awake()
     {
-        InitializeGrid();
         photonView = GetComponent<PhotonView>();
+
+        InitializeGrid();
+        InitializeGame();
 
         if (_instance != null && _instance != this)
         {
@@ -65,10 +67,12 @@ public class GameManager : MonoBehaviourPunCallbacks
         DontDestroyOnLoad(gameObject);
     }
 
-    #region Init
+    #region Initialize method
     private void InitializeGrid()
     {
         gridPosition = new Vector2[GRID_SIZE, GRID_SIZE];
+        stoneObjects = new GameObject[GRID_SIZE, GRID_SIZE];
+        placedStones = new int[GRID_SIZE, GRID_SIZE];
 
         //바둑판 이미지 측정
         float boardWidth = boardRenderer.bounds.size.x;
@@ -90,37 +94,35 @@ public class GameManager : MonoBehaviourPunCallbacks
             }
         }
 
-        placedStones = new GameObject[GRID_SIZE, GRID_SIZE];
     }
 
     private void InitializeGame()
     {
-        //보드판 초기화
-        for (int i = 0; i < placedStones.GetLength(0); i++)
+        SetReadyState();
+
+        for (int i = 0; i < GRID_SIZE; i++)
         {
-            for (int j = 0; j < placedStones.GetLength(1); j++)
+            for (int j = 0; j < GRID_SIZE; j++)
             {
-                if (placedStones[i, j] != null)
+                if (stoneObjects[i, j] != null)
                 {
-                    Destroy(placedStones[i, j]);
-                    placedStones[i, j] = null;
+                    Destroy(stoneObjects[i, j]);
+                    stoneObjects[i, j] = null;
                 }
+                placedStones[i, j] = 0;
             }
         }
     }
 
     public void InitializePlayerReadyStatus()
     {
-        //플레이어 준비상태 확인
         playerReadyStatus.Clear();
         foreach (var player in PhotonNetwork.CurrentRoom.Players)
         {
             playerReadyStatus[player.Key] = false;
         }
     }
-
     #endregion
-
 
     private void Update()
     {
@@ -130,13 +132,7 @@ public class GameManager : MonoBehaviourPunCallbacks
         }
     }
 
-    #region 게임 준비 상태 
-    public void SetReadyState()
-    {
-        currentState = GameState.READY;
-        InitializeGame();
-    }
-
+    #region Game ReadyState
     public void OnPlayerReady()
     {
         int localPlayerID = PhotonNetwork.LocalPlayer.ActorNumber;
@@ -149,30 +145,31 @@ public class GameManager : MonoBehaviourPunCallbacks
 
     private void CheckAllPlayersReady()
     {
-        //준비 상태 순회하며 확인
         foreach (var player in playerReadyStatus)
         {
             if (!player.Value)
                 return;
         }
 
-        //마스터만 시작
         if (PhotonNetwork.IsMasterClient)
             StartGame();
     }
     #endregion
 
-    #region 게임 진행 상태
+    #region Game PlayingState
     private void StartGame()
     {
-        currentState = GameState.PLAYING;
+        SetPlayingState();
         photonView.RPC("SetGameState", RpcTarget.All, GameState.PLAYING);
         currentPlayerTurn = 1;
     }
 
+    /// <summary>
+    /// 격자선에 정확히 돌을 놓을 수 있게 하는 메서드
+    /// </summary>
     private void PlaceStoneAtMousePosition()
     {
-        if (currentState != GameState.PLAYING || player != currentPlayerTurn)
+        if (!IsGamePlaying() || player != currentPlayerTurn)
             return;
 
         int closestX;
@@ -182,13 +179,6 @@ public class GameManager : MonoBehaviourPunCallbacks
         TryPlaceStoneAndChagneTurn(closestX, closestY);
     }
 
-    //게임 승리 조건 추가
-    //이중 for문으로 i,j가 i + 4, j + 4가 되어 오목이 된다면 승리.
-
-
-
-
-    //격자선에 정확히 돌을 놓을 수 있게 하는 메서드
     private void FindClosestGridPosition(out int closestX, out int closestY)
     {
         Vector2 mouseWorldPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
@@ -215,7 +205,7 @@ public class GameManager : MonoBehaviourPunCallbacks
 
     private void TryPlaceStoneAndChagneTurn(int closestX, int closestY)
     {
-        if (placedStones[closestX, closestY] == null)
+        if (placedStones[closestX, closestY] == 0)
         {
             photonView.RPC("PlaceStone", RpcTarget.All, closestX, closestY, player);
             ChangeTurn();
@@ -229,6 +219,84 @@ public class GameManager : MonoBehaviourPunCallbacks
 
         Debug.Log($"지금은 {currentPlayerTurn}의 턴입니다.");
     }
+    #endregion
+
+    #region 게임 오버 상태
+    private void SetGameOver()
+    {
+        SetGameOverState();
+        photonView.RPC("SetGameState", RpcTarget.All, GameState.GAMEOVER);
+        StartCoroutine(RestartGameDelay(2.5f));
+    }
+
+    private IEnumerator RestartGameDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        InitializePlayerReadyStatus();
+        InitializeGame();
+    }
+    #endregion
+
+    #region Game Rules
+    /// <summary>
+    /// 오목 승리 조건
+    /// </summary>
+    /// <param name="x"></param>
+    /// <param name="y"></param>
+    /// <param name="playerNumber"></param>
+    /// <returns></returns>
+    private bool CheckHorizontalWin(int x, int y, int playerNumber)
+    {
+        //현재 놓인 돌을 카운트의 시작점
+        int count = 1;
+
+        for (int i = x - 1; i >= 0 && placedStones[i, y] == playerNumber; i--)
+            count++;
+
+        for (int i = x + 1; i < GRID_SIZE && placedStones[i, y] == playerNumber; i++)
+            count++;
+
+        return count >= 5;
+
+    }
+    private bool CheckVerticalWin(int x, int y, int playerNumber)
+    {
+        int count = 1;
+
+        for (int j = y - 1; j >= 0 && placedStones[x, j] == playerNumber; j--)
+            count++;
+
+        for (int j = y + 1; j < GRID_SIZE && placedStones[x, j] == playerNumber; j++)
+            count++;
+
+        return count >= 5;
+    }
+
+    private bool CheckDiagonalWin(int x, int y, int playerNumber)
+    {
+        int countUp = 1;
+        int countDown = 1;
+
+        // 대각선 [/] 모양 검사
+        for (int i = x - 1, j = y - 1; i >= 0 && j >= 0 && placedStones[i, j] == playerNumber; i--, j--)
+            countDown++;
+
+        for (int i = x + 1, j = y + 1; i < GRID_SIZE && j < GRID_SIZE && placedStones[i, j] == playerNumber; i++, j++)
+            countDown++;
+
+        // 대각선 [\] 모양 검사
+        for (int i = x + 1, j = y - 1; i < GRID_SIZE && j >= 0 && placedStones[i, j] == playerNumber; i++, j--)
+            countUp++;
+
+        for (int i = x - 1, j = y + 1; i >= 0 && j < GRID_SIZE && placedStones[i, j] == playerNumber; i--, j++)
+            countUp++;
+
+        return countDown >= 5 || countUp >= 5;
+    }
+
+    //
+
+
     #endregion
 
     #region PunRPC
@@ -252,14 +320,36 @@ public class GameManager : MonoBehaviourPunCallbacks
         string stonePath = playerNumber == 1 ? "Prefabs/Ingame_Slime" : "Prefabs/Ingame_Yeti";
         GameObject stonePrefab = Resources.Load<GameObject>(stonePath);
         GameObject newStone = Instantiate(stonePrefab, gridPosition[x, y], Quaternion.identity);
-        placedStones[x, y] = newStone;
+        placedStones[x, y] = playerNumber;
+        stoneObjects[x, y] = newStone;
+
+        if (CheckHorizontalWin(x, y, playerNumber) || CheckVerticalWin(x, y, playerNumber) || CheckDiagonalWin(x, y, playerNumber))
+        {
+            Debug.Log($"Player {playerNumber} wins!");
+            SetGameOver();
+        }
     }
+
     #endregion
 
-    #region 진행 상태
+    #region State
+    private void SetReadyState() => currentState = GameState.READY;
+    private void SetPlayingState() => currentState = GameState.PLAYING;
+    private void SetGameOverState() => currentState = GameState.GAMEOVER;
+
+    public bool IsGameReady()
+    {
+        return currentState == GameState.READY;
+    }
+
     public bool IsGamePlaying()
     {
         return currentState == GameState.PLAYING;
+    }
+
+    public bool IsGameOver()
+    {
+        return currentState == GameState.GAMEOVER;
     }
 
     #endregion

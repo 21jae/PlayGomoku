@@ -616,7 +616,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 17fa8b0efd55a0f4dbb57630b5ce4064, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gm: {fileID: 0}
+  gm: {fileID: 2062034586}
   roomInputField: {fileID: 1959974262}
   lobbyPanel: {fileID: 1185616900}
   roomPanel: {fileID: 2130158525}
