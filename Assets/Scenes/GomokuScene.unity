@@ -153,7 +153,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   boardRenderer: {fileID: 2145638903}
-  player: 0
 --- !u!4 &74810992
 Transform:
   m_ObjectHideFlags: 0

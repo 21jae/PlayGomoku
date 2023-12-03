@@ -670,6 +670,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 33f057a09b78dab45a915a1e5b3c3095, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  readyBtn: {fileID: 149621058}
+  leaveBtn: {fileID: 1497189225}
 --- !u!4 &440892861
 Transform:
   m_ObjectHideFlags: 0
@@ -792,7 +794,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   boardRenderer: {fileID: 681663076}
-  player: 0
 --- !u!4 &566006454
 Transform:
   m_ObjectHideFlags: 0
