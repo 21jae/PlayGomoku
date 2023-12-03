@@ -37,12 +37,12 @@ public class GameManager : MonoBehaviourPunCallbacks
     private Dictionary<int, bool> playerReadyStatus = new Dictionary<int, bool>();
 
     private const int GRID_SIZE = 15;
-    private GameState currentState { get; set; }
-    private Vector2[,] gridPosition { get; set; }   //격자
-    private GameObject[,] stoneObjects { get; set; }   //바둑알 추적
-    private int[,] placedStones { get; set; }   //바둑알 플레이어 번호 저장
-    private int currentPlayerTurn { get; set; }   //턴
-    public int player { get; set; }
+    private GameState currentState              { get; set; }
+    private Vector2[,] gridPosition             { get; set; }   //격자
+    private GameObject[,] stoneObjects          { get; set; }   //바둑알 추적
+    private int[,] placedStones                 { get; set; }   //바둑알 플레이어 번호 저장
+    private int currentPlayerTurn               { get; set; }   //턴
+    public int player                           { get; set; }
 
 
     private void Awake()
@@ -126,7 +126,6 @@ public class GameManager : MonoBehaviourPunCallbacks
         }
     }
 
-    #region Game ReadyState
     /// <summary>
     /// 플레이어가 모두 준비가 되었는지 확인한다.
     /// 방장은 게임 시작이 가능하다.
@@ -153,19 +152,6 @@ public class GameManager : MonoBehaviourPunCallbacks
             StartGame();
     }
 
-    private void ResetAllPlayersScoreUpdateStatus()
-    {
-        foreach (var playerInfo in FindObjectsOfType<PlayerInfo>())
-        {
-            playerInfo.ResetScoreUpdateStatus();
-        }
-    }
-    #endregion
-
-    #region Game PlayingState
-    /// <summary>
-    /// 게임중 상태를 알림
-    /// </summary>
     private void StartGame()
     {
         SetPlayingState();
@@ -230,11 +216,10 @@ public class GameManager : MonoBehaviourPunCallbacks
 
         Debug.Log($"지금은 {currentPlayerTurn}의 턴입니다.");
     }
-    #endregion
 
-    #region 게임 오버 상태
     /// <summary>
     /// 승리 조건을 충족해 GameOver 상태 전환
+    /// 승리 사운드 재생 및 게임 초기화
     /// </summary>
     private void SetGameOver()
     {
@@ -250,7 +235,6 @@ public class GameManager : MonoBehaviourPunCallbacks
         InitializeGame();
         SetReadyState();
     }
-    #endregion
 
     #region Game Rules
     /// <summary>
@@ -309,6 +293,13 @@ public class GameManager : MonoBehaviourPunCallbacks
         return countDown >= 5 || countUp >= 5;
     }
 
+    private void ResetAllPlayersScoreUpdateStatus()
+    {
+        foreach (var playerInfo in FindObjectsOfType<PlayerInfo>())
+        {
+            playerInfo.ResetScoreUpdateStatus();
+        }
+    }
     #endregion
 
     #region PunRPC
