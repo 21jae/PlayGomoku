@@ -1,4 +1,5 @@
 using Photon.Pun;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -17,11 +18,11 @@ public class GameManager : MonoBehaviourPunCallbacks
     {
         get
         {
-            if (_instance == null )
+            if (_instance == null)
             {
                 _instance = FindObjectOfType<GameManager>();
 
-                if (_instance == null )
+                if (_instance == null)
                 {
                     GameObject gameManager = new GameObject("GameManager");
                     _instance = gameManager.AddComponent<GameManager>();
@@ -34,7 +35,7 @@ public class GameManager : MonoBehaviourPunCallbacks
 
 
     private GameState currentState;
-    public GameState CurrentState { get; set; }
+    //public GameState CurrentState { get; private set; }
 
     private static int GRID_SIZE = 15;
 
@@ -92,25 +93,9 @@ public class GameManager : MonoBehaviourPunCallbacks
         placedStones = new GameObject[GRID_SIZE, GRID_SIZE];
     }
 
-    private void OnDrawGizmos()
-    {
-        if (gridPosition != null)
-        {
-            Gizmos.color = Color.red;
-
-            int gridSize = gridPosition.GetLength(0);
-            for (int i = 0; i < gridSize; i++)
-            {
-                for (int j = 0; j < gridSize; j++)
-                {
-                    Gizmos.DrawSphere(new Vector3(gridPosition[i, j].x, gridPosition[i, j].y, 0), 0.1f);
-                }
-            }
-        }
-    }
-
     private void InitializeGame()
     {
+        //보드판 초기화
         for (int i = 0; i < placedStones.GetLength(0); i++)
         {
             for (int j = 0; j < placedStones.GetLength(1); j++)
@@ -126,6 +111,7 @@ public class GameManager : MonoBehaviourPunCallbacks
 
     public void InitializePlayerReadyStatus()
     {
+        //플레이어 준비상태 확인
         playerReadyStatus.Clear();
         foreach (var player in PhotonNetwork.CurrentRoom.Players)
         {
@@ -143,8 +129,6 @@ public class GameManager : MonoBehaviourPunCallbacks
             PlaceStoneAtMousePosition();
         }
     }
-
-
 
     #region 게임 준비 상태 
     public void SetReadyState()
@@ -165,12 +149,14 @@ public class GameManager : MonoBehaviourPunCallbacks
 
     private void CheckAllPlayersReady()
     {
+        //준비 상태 순회하며 확인
         foreach (var player in playerReadyStatus)
         {
             if (!player.Value)
                 return;
         }
 
+        //마스터만 시작
         if (PhotonNetwork.IsMasterClient)
             StartGame();
     }
@@ -184,13 +170,6 @@ public class GameManager : MonoBehaviourPunCallbacks
         currentPlayerTurn = 1;
     }
 
-    public bool IsGamePlaying()
-    {
-        return currentState == GameState.PLAYING;
-    }
-
-
-
     private void PlaceStoneAtMousePosition()
     {
         if (currentState != GameState.PLAYING || player != currentPlayerTurn)
@@ -200,19 +179,16 @@ public class GameManager : MonoBehaviourPunCallbacks
         int closestY;
 
         FindClosestGridPosition(out closestX, out closestY);
-
         TryPlaceStoneAndChagneTurn(closestX, closestY);
     }
 
-    private void TryPlaceStoneAndChagneTurn(int closestX, int closestY)
-    {
-        if (placedStones[closestX, closestY] == null)
-        {
-            photonView.RPC("PlaceStone", RpcTarget.All, closestX, closestY, player);
-            ChangeTurn();
-        }
-    }
+    //게임 승리 조건 추가
+    //이중 for문으로 i,j가 i + 4, j + 4가 되어 오목이 된다면 승리.
 
+
+
+
+    //격자선에 정확히 돌을 놓을 수 있게 하는 메서드
     private void FindClosestGridPosition(out int closestX, out int closestY)
     {
         Vector2 mouseWorldPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
@@ -237,6 +213,15 @@ public class GameManager : MonoBehaviourPunCallbacks
         }
     }
 
+    private void TryPlaceStoneAndChagneTurn(int closestX, int closestY)
+    {
+        if (placedStones[closestX, closestY] == null)
+        {
+            photonView.RPC("PlaceStone", RpcTarget.All, closestX, closestY, player);
+            ChangeTurn();
+        }
+    }
+
     private void ChangeTurn()
     {
         currentPlayerTurn = currentPlayerTurn == 1 ? 2 : 1;
@@ -251,7 +236,6 @@ public class GameManager : MonoBehaviourPunCallbacks
     [PunRPC] public void SetGameState(GameState state) => currentState = state;
     [PunRPC] public void UpdateCurrentTurn(int newTurn) => currentPlayerTurn = newTurn;
 
-
     [PunRPC]
     public void PlayerReady(int playerID)
     {
@@ -262,7 +246,6 @@ public class GameManager : MonoBehaviourPunCallbacks
             CheckAllPlayersReady();
     }
 
-
     [PunRPC]
     public void PlaceStone(int x, int y, int playerNumber)
     {
@@ -270,6 +253,13 @@ public class GameManager : MonoBehaviourPunCallbacks
         GameObject stonePrefab = Resources.Load<GameObject>(stonePath);
         GameObject newStone = Instantiate(stonePrefab, gridPosition[x, y], Quaternion.identity);
         placedStones[x, y] = newStone;
+    }
+    #endregion
+
+    #region 진행 상태
+    public bool IsGamePlaying()
+    {
+        return currentState == GameState.PLAYING;
     }
 
     #endregion
@@ -293,4 +283,3 @@ public class GameManager : MonoBehaviourPunCallbacks
     }
     #endregion
 }
-

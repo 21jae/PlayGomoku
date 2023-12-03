@@ -24,4 +24,6 @@ public class PlayerItem : MonoBehaviour
         //key에따라 해당하는 스프라이트를 로드
         return Resources.Load<Sprite>(key);
     }
+
+    //각자 시간마다 째깍째깍 추가
 }
