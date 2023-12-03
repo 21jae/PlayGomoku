@@ -10,7 +10,6 @@ public enum GameState
     GAMEOVER
 }
 
-
 public class GameManager : MonoBehaviourPunCallbacks
 {
     private static GameManager _instance;
@@ -33,21 +32,17 @@ public class GameManager : MonoBehaviourPunCallbacks
         }
     }
 
-
-    private GameState currentState;
-
-    private static int GRID_SIZE = 15;
-
     private PhotonView photonView;
-
     [SerializeField] private SpriteRenderer boardRenderer;
     private Dictionary<int, bool> playerReadyStatus = new Dictionary<int, bool>();
 
-    private Vector2[,] gridPosition;            //격자
-    private GameObject[,] stoneObjects;         //바둑알 추적
-    private int[,] placedStones;                //바둑알 플레이어 번호 저장
-    public int player { get; set; }
-    private int currentPlayerTurn;
+    private const int GRID_SIZE = 15;
+    private GameState currentState              { get; set; }   
+    private Vector2[,] gridPosition             { get; set; }   //격자
+    private GameObject[,] stoneObjects          { get; set; }   //바둑알 추적
+    private int[,] placedStones                 { get; set; }   //바둑알 플레이어 번호 저장
+    private int currentPlayerTurn               { get; set; }   //턴
+    public int player                           { get; set; }
 
 
     private void Awake()
@@ -93,7 +88,6 @@ public class GameManager : MonoBehaviourPunCallbacks
                 gridPosition[i, j] = new Vector2(posX, posY);
             }
         }
-
     }
 
     private void InitializeGame()
@@ -187,9 +181,9 @@ public class GameManager : MonoBehaviourPunCallbacks
         closestY = -1;
         float closetDistance = Mathf.Infinity;
 
-        for (int i = 0; i < 15; i++)
+        for (int i = 0; i < GRID_SIZE; i++)
         {
-            for (int j = 0; j < 15; j++)
+            for (int j = 0; j < GRID_SIZE; j++)
             {
                 float distance = Vector2.Distance(mouseWorldPosition, gridPosition[i, j]);
 
@@ -293,10 +287,6 @@ public class GameManager : MonoBehaviourPunCallbacks
 
         return countDown >= 5 || countUp >= 5;
     }
-
-    //
-
-
     #endregion
 
     #region PunRPC
