@@ -44,6 +44,8 @@ MonoBehaviour:
   - ChangeGameState
   - SetGameState
   - UpdateCurrentTurn
+  - UpdatePlayerScore
+  - UpdateScoreRPC
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 1

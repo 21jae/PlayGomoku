@@ -37,12 +37,12 @@ public class GameManager : MonoBehaviourPunCallbacks
     private Dictionary<int, bool> playerReadyStatus = new Dictionary<int, bool>();
 
     private const int GRID_SIZE = 15;
-    private GameState currentState              { get; set; }   
-    private Vector2[,] gridPosition             { get; set; }   //격자
-    private GameObject[,] stoneObjects          { get; set; }   //바둑알 추적
-    private int[,] placedStones                 { get; set; }   //바둑알 플레이어 번호 저장
-    private int currentPlayerTurn               { get; set; }   //턴
-    public int player                           { get; set; }
+    private GameState currentState { get; set; }
+    private Vector2[,] gridPosition { get; set; }   //격자
+    private GameObject[,] stoneObjects { get; set; }   //바둑알 추적
+    private int[,] placedStones { get; set; }   //바둑알 플레이어 번호 저장
+    private int currentPlayerTurn { get; set; }   //턴
+    public int player { get; set; }
 
 
     private void Awake()
@@ -127,6 +127,10 @@ public class GameManager : MonoBehaviourPunCallbacks
     }
 
     #region Game ReadyState
+    /// <summary>
+    /// 플레이어가 모두 준비가 되었는지 확인한다.
+    /// 방장은 게임 시작이 가능하다.
+    /// </summary>
     public void OnPlayerReady()
     {
         int localPlayerID = PhotonNetwork.LocalPlayer.ActorNumber;
@@ -148,9 +152,20 @@ public class GameManager : MonoBehaviourPunCallbacks
         if (PhotonNetwork.IsMasterClient)
             StartGame();
     }
+
+    private void ResetAllPlayersScoreUpdateStatus()
+    {
+        foreach (var playerInfo in FindObjectsOfType<PlayerInfo>())
+        {
+            playerInfo.ResetScoreUpdateStatus();
+        }
+    }
     #endregion
 
     #region Game PlayingState
+    /// <summary>
+    /// 게임중 상태를 알림
+    /// </summary>
     private void StartGame()
     {
         SetPlayingState();
@@ -159,7 +174,9 @@ public class GameManager : MonoBehaviourPunCallbacks
     }
 
     /// <summary>
-    /// 격자선에 정확히 돌을 놓을 수 있게 하는 메서드
+    /// 격자선에 정확히 맞추지 않아도 근처로 배정해주는 메서드
+    /// 클릭한 위치의 가장 가까운 격자에 바둑알 생성
+    /// 턴 변경
     /// </summary>
     private void PlaceStoneAtMousePosition()
     {
@@ -216,6 +233,9 @@ public class GameManager : MonoBehaviourPunCallbacks
     #endregion
 
     #region 게임 오버 상태
+    /// <summary>
+    /// 승리 조건을 충족해 GameOver 상태 전환
+    /// </summary>
     private void SetGameOver()
     {
         SetGameOverState();
@@ -228,6 +248,7 @@ public class GameManager : MonoBehaviourPunCallbacks
         yield return new WaitForSeconds(delay);
         InitializePlayerReadyStatus();
         InitializeGame();
+        SetReadyState();
     }
     #endregion
 
@@ -287,10 +308,15 @@ public class GameManager : MonoBehaviourPunCallbacks
 
         return countDown >= 5 || countUp >= 5;
     }
+
     #endregion
 
     #region PunRPC
-
+    /// <summary>
+    /// 포톤 네트워크
+    /// 현재 상태를 모든 플레이어에게 알림
+    /// </summary>
+    /// <param name="state"></param>
     [PunRPC] public void SetGameState(GameState state) => currentState = state;
     [PunRPC] public void UpdateCurrentTurn(int newTurn) => currentPlayerTurn = newTurn;
 
@@ -315,15 +341,29 @@ public class GameManager : MonoBehaviourPunCallbacks
 
         if (CheckHorizontalWin(x, y, playerNumber) || CheckVerticalWin(x, y, playerNumber) || CheckDiagonalWin(x, y, playerNumber))
         {
+            photonView.RPC("UpdateScoreRPC", RpcTarget.All, playerNumber);
             Debug.Log($"Player {playerNumber} wins!");
             SetGameOver();
         }
     }
 
+    [PunRPC]
+    public void UpdateScoreRPC(int winningPlayer)
+    {
+        foreach (var playerInfo in FindObjectsOfType<PlayerInfo>())
+        {
+            playerInfo.UpdateScoreRecord(winningPlayer);
+        }
+    }
     #endregion
 
     #region State
-    private void SetReadyState() => currentState = GameState.READY;
+    private void SetReadyState()
+    {
+        currentState = GameState.READY;
+        ResetAllPlayersScoreUpdateStatus();
+    }
+
     private void SetPlayingState() => currentState = GameState.PLAYING;
     private void SetGameOverState() => currentState = GameState.GAMEOVER;
 
