@@ -145,9 +145,6 @@ public class UIManager : MonoBehaviourPun
             Time.timeScale = 0f;
             countdownText.text = $"시간 만료!";
         }
-
-        if (GameManager.Instance.IsGameOver())
-            Time.timeScale = 60f;
     }
 
     /// <summary>
@@ -169,8 +166,6 @@ public class UIManager : MonoBehaviourPun
     [PunRPC]
     public void RemoveResultPanelRPC()
     {
-        Debug.Log("RemoveResultPanelRPC called");
-
         GameObject matchResultParent = GameObject.Find("UI_MatchResult");
         if (matchResultParent != null)
         {

@@ -99,7 +99,6 @@ public class GameManager : MonoBehaviourPunCallbacks
     private void InitializeGame()
     {
         SetReadyState();
-        UIManager.Instance.photonView.RPC("RemoveResultPanelRPC", RpcTarget.All);
 
         for (int i = 0; i < GRID_SIZE; i++)
         {
@@ -241,12 +240,13 @@ public class GameManager : MonoBehaviourPunCallbacks
         SetGameOverState();
         photonView.RPC("SetGameState", RpcTarget.All, GameState.GAMEOVER);
         UIManager.Instance.ToggleStartButtons();
-        StartCoroutine(RestartGameDelay(2.5f));
+        StartCoroutine(RestartGameDelay(3f));
     }
 
     private IEnumerator RestartGameDelay(float delay)
     {
         yield return new WaitForSeconds(delay);
+        UIManager.Instance.photonView.RPC("RemoveResultPanelRPC", RpcTarget.All);
         InitializePlayerReadyStatus();
         InitializeGame();
         SetReadyState();
@@ -339,7 +339,6 @@ public class GameManager : MonoBehaviourPunCallbacks
     public void PlayerReady(int playerID)
     {
         playerReadyStatus[playerID] = true;
-        Debug.Log($"Player {playerID} is ready");
 
         if (PhotonNetwork.IsMasterClient)
             CheckAllPlayersReady();
@@ -365,7 +364,6 @@ public class GameManager : MonoBehaviourPunCallbacks
         {
             photonView.RPC("UpdateScoreRPC", RpcTarget.All, playerNumber);
             UIManager.Instance.photonView.RPC("UpdateResultPanelRPC", RpcTarget.All, playerNumber);
-            UIManager.Instance.photonView.RPC("ResetTimerRPC", RpcTarget.All, playerNumber, 60f);
             SoundManager.Instance.PlayVictorySound();
             SetGameOver();
         }
@@ -408,25 +406,6 @@ public class GameManager : MonoBehaviourPunCallbacks
     public bool IsGameOver()
     {
         return currentState == GameState.GAMEOVER;
-    }
-
-    #endregion
-
-    #region InGameConsole
-    public void CheckPlayer2Turn()
-    {
-        if (currentPlayerTurn == 2)
-        {
-            InGameConsole console = FindObjectOfType<InGameConsole>();
-            if (console != null)
-                console.CheckPlayer2CanPlaceStone(true);
-        }
-        else
-        {
-            InGameConsole console = FindObjectOfType<InGameConsole>();
-            if (console != null)
-                console.CheckPlayer2CanPlaceStone(false);
-        }
     }
     #endregion
 }
