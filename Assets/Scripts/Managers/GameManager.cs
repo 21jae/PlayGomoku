@@ -169,7 +169,7 @@ public class GameManager : MonoBehaviourPunCallbacks
     /// <summary>
     /// 격자선에 정확히 맞추지 않아도 근처로 배정해주는 메서드
     /// 클릭한 위치의 가장 가까운 격자에 바둑알 생성
-    /// 턴 변경
+    /// 범위 밖에 클릭시 생성 불가능
     /// </summary>
     private void PlaceStoneAtMousePosition()
     {
@@ -180,7 +180,11 @@ public class GameManager : MonoBehaviourPunCallbacks
         int closestY;
 
         FindClosestGridPosition(out closestX, out closestY);
-        TryPlaceStoneAndChagneTurn(closestX, closestY);
+
+        if (closestX >= 0 && closestX < GRID_SIZE && closestY >= 0 && closestY < GRID_SIZE)
+            TryPlaceStoneAndChagneTurn(closestX, closestY);
+        else
+            Debug.Log("거기엔 둘 수 없다네.");
     }
 
     private void FindClosestGridPosition(out int closestX, out int closestY)
@@ -215,13 +219,17 @@ public class GameManager : MonoBehaviourPunCallbacks
             ChangeTurn();
         }
     }
-
+    /// <summary>
+    /// 바둑돌을 놓으면 턴을 변경합니다
+    /// 누구의 차례인지 메세지가 출력됩니다.
+    /// </summary>
     private void ChangeTurn()
     {
         currentPlayerTurn = currentPlayerTurn == 1 ? 2 : 1;
         photonView.RPC("UpdateCurrentTurn", RpcTarget.All, currentPlayerTurn);
-
-        Debug.Log($"지금은 {currentPlayerTurn}의 턴입니다.");
+        string currentPlayerNickname = PhotonNetwork.CurrentRoom.Players[currentPlayerTurn].NickName;
+        UIManager.Instance.photonView.RPC("UpdateTurnText", RpcTarget.All, currentPlayerNickname);
+        UIManager.Instance.photonView.RPC("ResetTimerRPC", RpcTarget.All, 60f);
     }
 
     /// <summary>
@@ -232,6 +240,7 @@ public class GameManager : MonoBehaviourPunCallbacks
     {
         SetGameOverState();
         photonView.RPC("SetGameState", RpcTarget.All, GameState.GAMEOVER);
+        UIManager.Instance.ToggleStartButtons();
         StartCoroutine(RestartGameDelay(2.5f));
     }
 
@@ -348,6 +357,7 @@ public class GameManager : MonoBehaviourPunCallbacks
         string stonePath = playerNumber == 1 ? "Prefabs/Ingame_Slime" : "Prefabs/Ingame_Yeti";
         GameObject stonePrefab = Resources.Load<GameObject>(stonePath);
         GameObject newStone = Instantiate(stonePrefab, gridPosition[x, y], Quaternion.identity);
+        SoundManager.Instance.PlayButtonAndClickSound();
         placedStones[x, y] = playerNumber;
         stoneObjects[x, y] = newStone;
 
@@ -355,6 +365,8 @@ public class GameManager : MonoBehaviourPunCallbacks
         {
             photonView.RPC("UpdateScoreRPC", RpcTarget.All, playerNumber);
             UIManager.Instance.photonView.RPC("UpdateResultPanelRPC", RpcTarget.All, playerNumber);
+            UIManager.Instance.photonView.RPC("ResetTimerRPC", RpcTarget.All, playerNumber, 60f);
+            SoundManager.Instance.PlayVictorySound();
             SetGameOver();
         }
     }

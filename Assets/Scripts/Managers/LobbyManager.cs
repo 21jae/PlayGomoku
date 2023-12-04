@@ -34,8 +34,8 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     {
         if (roomTitleInputField.text.Length >= 2)
         {
-            //방 이름 전달
-            PhotonNetwork.CreateRoom(roomTitleInputField.text, new RoomOptions() { MaxPlayers = 2});
+            PhotonNetwork.CreateRoom(roomTitleInputField.text, new RoomOptions() { MaxPlayers = 2 });
+            SoundManager.Instance.PlayButtonAndClickSound();
         }
     }
 
@@ -46,22 +46,16 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     public override void OnJoinedRoom()
     {
         if (PhotonNetwork.IsMasterClient)
-        {
             Debug.Log("현재 플레이어는 마스터 클라이언트입니다.");
-        }
         else
-        {
             Debug.Log("현재 플레이어는 마스터 클라이언트가 아닙니다.");
-        }
 
         lobbyPanel.SetActive(false);
         roomPanel.SetActive(true);
 
         gameManager.player = PhotonNetwork.IsMasterClient ? 1 : 2;
-        //roomName.text = "Room Name: " + PhotonNetwork.CurrentRoom.Name;
         roomName.text = PhotonNetwork.CurrentRoom.Name;
         UpdatePlayerList();
-
         gameManager.InitializePlayerReadyStatus();
     }
 
@@ -86,16 +80,18 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         {
             Destroy(item.gameObject);
         }
-
         gomokuRoomList.Clear();
 
         foreach (RoomInfo room in list)
         {
-            GomokuRoom newRoom = Instantiate(gomokuRoom, gomokuRoomPosition);
-            TMP_Text textComponent = newRoom.GetComponentInChildren<TMP_Text>();
-            newRoom.roomName = textComponent;
-            newRoom.SetRoomName(room.Name);
-            gomokuRoomList.Add(newRoom);
+            if (!room.RemovedFromList)
+            {
+                GomokuRoom newRoom = Instantiate(gomokuRoom, gomokuRoomPosition);
+                TMP_Text textComponent = newRoom.GetComponentInChildren<TMP_Text>();
+                newRoom.roomName = textComponent;
+                newRoom.SetRoomName(room.Name);
+                gomokuRoomList.Add(newRoom);
+            }
         }
     }
 
@@ -107,14 +103,6 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     {
         PhotonNetwork.JoinRoom(roomName);
     }
-
-    /// <summary>
-    /// 방을 떠날때 호출
-    /// </summary>
-    //public void OnClickLeaveRoom()
-    //{
-    //    PhotonNetwork.LeaveRoom();
-    //}
 
     /// <summary>
     /// 방을 떠났을대 패널 비활성화 활성화
@@ -134,18 +122,15 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     }
 
     /// <summary>
-    /// 
+    /// 현재 방에 있는 플레이어 확인
     /// </summary>
     private void UpdatePlayerList()
     {
-        //이전 항목 지워주기
         foreach (PlayerInfo item in playerInfoList)
         {
             Destroy(item.gameObject);
         }
         playerInfoList.Clear();
-
-        //항목별로 생성
 
         //방 있는지 확인
         if (PhotonNetwork.CurrentRoom == null)
@@ -167,17 +152,4 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     {
         UpdatePlayerList();
     }
-
-
-    #region 방 생성 디버그
-    public override void OnCreatedRoom()
-    {
-        Debug.Log("방이 성공적으로 생성되었습니다.");
-    }
-
-    public override void OnCreateRoomFailed(short returnCode, string message)
-    {
-        Debug.Log("방 생성 실패!:" + message);
-    }
-    #endregion
 }
