@@ -1,5 +1,4 @@
 using Photon.Pun;
-using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using UnityEngine;
 using TMPro;
@@ -8,6 +7,11 @@ public class ConnectToServer : MonoBehaviourPunCallbacks
 {
     [SerializeField] private TMP_InputField usernameInput;
     [SerializeField] private TMP_Text buttonText;
+
+    private void Start()
+    {
+        SoundManager.Instance.PlayBackgroundLoginMusic();
+    }
 
     /// <summary>
     /// 아이디는 2글자 이상
@@ -25,6 +29,7 @@ public class ConnectToServer : MonoBehaviourPunCallbacks
 
     public override void OnConnectedToMaster()
     {
-        SceneManager.LoadScene("Lobby2");
+        SoundManager.Instance.StopMusic();
+        SceneManager.LoadScene("GomokuScene");
     }
 }
