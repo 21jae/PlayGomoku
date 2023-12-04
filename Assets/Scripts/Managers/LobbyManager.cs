@@ -36,6 +36,8 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         {
             PhotonNetwork.CreateRoom(roomTitleInputField.text, new RoomOptions() { MaxPlayers = 2 });
             SoundManager.Instance.PlayButtonAndClickSound();
+            UIManager.Instance.OnClickCancelRoom();
+            roomTitleInputField.text = "";
         }
     }
 

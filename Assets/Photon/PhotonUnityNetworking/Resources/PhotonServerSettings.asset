@@ -54,6 +54,7 @@ MonoBehaviour:
   - ResetTimerRPC
   - PrintPlayerTurnMessage
   - UpdateTurnText
+  - UpdatePlayScore
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 1

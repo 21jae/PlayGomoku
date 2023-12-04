@@ -2,6 +2,7 @@ using Photon.Pun;
 using Photon.Realtime;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SocialPlatforms.Impl;
 using UnityEngine.UI;
 
 public class PlayerInfo : MonoBehaviourPun
@@ -39,7 +40,7 @@ public class PlayerInfo : MonoBehaviourPun
             looseScore++;
             looseScoreText.text = $"{looseScore} ÆÐ";
         }
-        
+
         hasScoreBeenUpdated = true;
     }
 
