@@ -1,36 +1,27 @@
-using UnityEngine;
 using Photon.Pun;
 using Photon.Realtime;
+using TMPro;
+using UnityEngine;
 using UnityEngine.UI;
-using System;
 
 public class PlayerInfo : MonoBehaviourPun
 {
     [SerializeField] private Image playerImage;
-    [SerializeField] private Text playerName;
-    [SerializeField] private Text winScoreText;
-    [SerializeField] private Text looseScoreText;
+    [SerializeField] private TMP_Text playerName;
+    [SerializeField] private TMP_Text winScoreText;
+    [SerializeField] private TMP_Text looseScoreText;
 
-    private int winScore;
-    private int looseScore ;
-    private int playerActorNumber;
+    private int winScore                        { get; set; }
+    private int looseScore                      { get; set; }
+    private int playerActorNumber               { get; set; }
+    private bool hasScoreBeenUpdated            { get; set; }
 
-    private bool hasScoreBeenUpdated;
-
-    public void SetPlayerInfo(Player _player)
+    public void SetPlayerInfo(Player player)
     {
-        playerName.text = _player.NickName;
-        playerActorNumber = _player.ActorNumber;
-        Debug.Log($"PlayerInfo num : {playerActorNumber}");
-
-        string spriteKey = _player.IsMasterClient ? "arts/Character_Slime" : "arts/Character_Yeti";
-        playerImage.sprite = LoadPlayerSprite(spriteKey);
-    }
-
-    private Sprite LoadPlayerSprite(string key)
-    {
-        //key에따라 해당하는 스프라이트를 로드
-        return Resources.Load<Sprite>(key);
+        playerName.text = player.NickName;
+        playerActorNumber = player.ActorNumber;
+        string spriteKey = player.IsMasterClient ? "arts/Character_Slime" : "arts/Character_Yeti";
+        playerImage.sprite = Resources.Load<Sprite>(spriteKey);
     }
 
     public void UpdateScoreRecord(int winningPlayer)
@@ -40,15 +31,15 @@ public class PlayerInfo : MonoBehaviourPun
 
         if (playerActorNumber == winningPlayer)
         {
-            winScore += 1;
+            winScore++;
             winScoreText.text = $"{winScore} 승";
         }
         else
         {
-            looseScore += 1;
+            looseScore++;
             looseScoreText.text = $"{looseScore} 패";
         }
-
+        
         hasScoreBeenUpdated = true;
     }
 

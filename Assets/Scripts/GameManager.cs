@@ -93,6 +93,7 @@ public class GameManager : MonoBehaviourPunCallbacks
     private void InitializeGame()
     {
         SetReadyState();
+        UIManager.Instance.photonView.RPC("RemoveResultPanelRPC", RpcTarget.All);
 
         for (int i = 0; i < GRID_SIZE; i++)
         {
@@ -293,6 +294,9 @@ public class GameManager : MonoBehaviourPunCallbacks
         return countDown >= 5 || countUp >= 5;
     }
 
+    /// <summary>
+    /// 스코어 이중 업데이트 방지
+    /// </summary>
     private void ResetAllPlayersScoreUpdateStatus()
     {
         foreach (var playerInfo in FindObjectsOfType<PlayerInfo>())
@@ -333,7 +337,7 @@ public class GameManager : MonoBehaviourPunCallbacks
         if (CheckHorizontalWin(x, y, playerNumber) || CheckVerticalWin(x, y, playerNumber) || CheckDiagonalWin(x, y, playerNumber))
         {
             photonView.RPC("UpdateScoreRPC", RpcTarget.All, playerNumber);
-            Debug.Log($"Player {playerNumber} wins!");
+            UIManager.Instance.photonView.RPC("UpdateResultPanelRPC", RpcTarget.All, playerNumber);
             SetGameOver();
         }
     }
@@ -380,7 +384,6 @@ public class GameManager : MonoBehaviourPunCallbacks
     {
         if (currentPlayerTurn == 2)
         {
-            // 인게임 콘솔의 인스턴스를 찾고 CheckPlayer2CanPlaceStone 메서드를 호출
             InGameConsole console = FindObjectOfType<InGameConsole>();
             if (console != null)
                 console.CheckPlayer2CanPlaceStone(true);

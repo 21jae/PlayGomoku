@@ -4,23 +4,23 @@ using UnityEngine.UI;
 using UnityEngine;
 using System.Collections.Generic;
 using System;
+using TMPro;
 
 public class LobbyManager : MonoBehaviourPunCallbacks
 {
-    public GameManager gm;
+    [SerializeField] private GameManager gameManager;
+    [SerializeField] private TMP_InputField roomTitleInputField;
+    [SerializeField] private GameObject lobbyPanel;
+    [SerializeField] private GameObject roomPanel;
+    [SerializeField] private TMP_Text roomName;
+    [SerializeField] private GomokuRoom gomokuRoom;
 
-    public InputField roomInputField;
-    public GameObject lobbyPanel;
-    public GameObject roomPanel;
-    public Text roomName;
+    private List<GomokuRoom> gomokuRoomList = new List<GomokuRoom>();
+    [SerializeField] private Transform gomokuRoomPosition;
 
-    public RoomItem roomItemPrefab;
-    List<RoomItem> roomItemsList = new List<RoomItem>();
-    public Transform contentObject;
-
-    public List<PlayerInfo> playerItemsList = new List<PlayerInfo>();
-    public PlayerInfo playerItemPrefab;
-    public Transform playerItemParent;
+    private List<PlayerInfo> playerInfoList = new List<PlayerInfo>();
+    [SerializeField] private PlayerInfo playerInfo;
+    [SerializeField] private Transform playerInfoParent;
 
     private void Start()
     {
@@ -29,14 +29,14 @@ public class LobbyManager : MonoBehaviourPunCallbacks
 
     /// <summary>
     /// 생성된 방을 클릭했을때 호출
-    /// 필드에 입력된 텍스트가 1자 이상일때만 새로운 방을 생성한다.
+    /// 필드에 입력된 텍스트가 2자 이상일때만 새로운 방을 생성한다.
     /// </summary>
     public void OnClickCreate()
     {
-        if (roomInputField.text.Length >= 1)
+        if (roomTitleInputField.text.Length >= 2)
         {
             //방 이름 전달
-            PhotonNetwork.CreateRoom(roomInputField.text, new RoomOptions() { MaxPlayers = 3 });
+            PhotonNetwork.CreateRoom(roomTitleInputField.text, new RoomOptions() { MaxPlayers = 2});
         }
     }
 
@@ -58,11 +58,12 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         lobbyPanel.SetActive(false);
         roomPanel.SetActive(true);
 
-        gm.player = PhotonNetwork.IsMasterClient ? 1 : 2;
-        roomName.text = "Room Name: " + PhotonNetwork.CurrentRoom.Name;
+        gameManager.player = PhotonNetwork.IsMasterClient ? 1 : 2;
+        //roomName.text = "Room Name: " + PhotonNetwork.CurrentRoom.Name;
+        roomName.text = PhotonNetwork.CurrentRoom.Name;
         UpdatePlayerList();
 
-        gm.InitializePlayerReadyStatus();
+        gameManager.InitializePlayerReadyStatus();
     }
 
     /// <summary>
@@ -82,20 +83,20 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     /// <param name="list"></param>
     private void UpdateRoomList(List<RoomInfo> list)
     {
-        foreach (RoomItem item in roomItemsList)
+        foreach (GomokuRoom item in gomokuRoomList)
         {
             Destroy(item.gameObject);
         }
 
-        roomItemsList.Clear();
+        gomokuRoomList.Clear();
 
         foreach (RoomInfo room in list)
         {
-            RoomItem newRoom = Instantiate(roomItemPrefab, contentObject);
-            Text textComponent = newRoom.GetComponentInChildren<Text>();
+            GomokuRoom newRoom = Instantiate(gomokuRoom, gomokuRoomPosition);
+            TMP_Text textComponent = newRoom.GetComponentInChildren<TMP_Text>();
             newRoom.roomName = textComponent;
             newRoom.SetRoomName(room.Name);
-            roomItemsList.Add(newRoom);
+            gomokuRoomList.Add(newRoom);
         }
     }
 
@@ -139,11 +140,11 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     private void UpdatePlayerList()
     {
         //이전 항목 지워주기
-        foreach (PlayerInfo item in playerItemsList)
+        foreach (PlayerInfo item in playerInfoList)
         {
             Destroy(item.gameObject);
         }
-        playerItemsList.Clear();
+        playerInfoList.Clear();
 
         //항목별로 생성
 
@@ -153,9 +154,9 @@ public class LobbyManager : MonoBehaviourPunCallbacks
 
         foreach (KeyValuePair<int, Player> player in PhotonNetwork.CurrentRoom.Players)
         {
-            PlayerInfo newPlayerItem = Instantiate(playerItemPrefab, playerItemParent);
+            PlayerInfo newPlayerItem = Instantiate(playerInfo, playerInfoParent);
             newPlayerItem.SetPlayerInfo(player.Value);
-            playerItemsList.Add(newPlayerItem);
+            playerInfoList.Add(newPlayerItem);
         }
     }
     public override void OnPlayerEnteredRoom(Player newPlayer)

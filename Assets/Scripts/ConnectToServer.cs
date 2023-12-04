@@ -1,21 +1,24 @@
 using Photon.Pun;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using UnityEngine;
+using TMPro;
 
 public class ConnectToServer : MonoBehaviourPunCallbacks
 {
-    public InputField usernameInput;
-    public Text buttonText;
+    [SerializeField] private TMP_InputField usernameInput;
+    [SerializeField] private TMP_Text buttonText;
 
+    /// <summary>
+    /// 아이디는 2글자 이상
+    /// </summary>
     public void OnClickConnect()
     {
-        if (usernameInput.text.Length >= 1) //비어있는 이름 X
+        if (usernameInput.text.Length >= 2)
         {
             //사용자가 입력한 이름 포톤 이름으로 설정
             PhotonNetwork.NickName = usernameInput.text;    
-            
-            //버튼 클릭시 정보호출
-            buttonText.text = "Connecting...";
+            buttonText.text = "접속중...";
             PhotonNetwork.ConnectUsingSettings();
         }
     }

@@ -1,7 +1,7 @@
 using Photon.Pun;
 using UnityEngine;
 
-public class UIManager : MonoBehaviour
+public class UIManager : MonoBehaviourPun
 {
     private static UIManager _instance;
     public static UIManager Instance
@@ -22,6 +22,8 @@ public class UIManager : MonoBehaviour
             return _instance;
         }
     }
+    
+    [SerializeField] private Transform matchResultPosition;
 
     private void Awake()
     {
@@ -34,7 +36,6 @@ public class UIManager : MonoBehaviour
         _instance = this;
         DontDestroyOnLoad(gameObject);
     }
-
 
     public void OnReadyButtonClicked()
     {
@@ -52,5 +53,27 @@ public class UIManager : MonoBehaviour
 
         else
             Debug.LogError("Can`t Leave the room while the game is in PLYAING state");
+    }
+
+    [PunRPC]
+    public void UpdateResultPanelRPC(int winningPlayer)
+    {
+        int localPlayerID = PhotonNetwork.LocalPlayer.ActorNumber;
+        string resultToLoad = (localPlayerID == winningPlayer) ? "Prefabs/UI_Ingame_Win" : "Prefabs/UI_Ingame_Loose";
+        GameObject resultPrefab = Resources.Load<GameObject>(resultToLoad);
+        Instantiate(resultPrefab, matchResultPosition.transform);
+    }
+
+    [PunRPC]
+    public void RemoveResultPanelRPC()
+    {
+        Debug.Log("RemoveResultPanelRPC called");
+
+        GameObject matchResultParent = GameObject.Find("UI_MatchResult");
+        if (matchResultParent != null)
+        {
+            foreach (Transform child in matchResultParent.transform)
+                Destroy(child.gameObject);
+        }
     }
 }
