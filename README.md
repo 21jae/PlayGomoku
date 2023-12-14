@@ -1,4 +1,5 @@
 # 메이플스토리 오목 
+<img src="https://github.com/21jae/PlayGomoku/assets/90013449/b8bc10fa-2b4c-48bf-a09f-5a150a99d1b8" width="50%" height="auto">
 
 ## 개요
 제목 | MapleStory Omok 
