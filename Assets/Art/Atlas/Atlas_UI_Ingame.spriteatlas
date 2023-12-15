@@ -1,0 +1,66 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!687078895 &4343727234628468602
+SpriteAtlas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Atlas_UI_Ingame
+  m_EditorData:
+    serializedVersion: 2
+    textureSettings:
+      serializedVersion: 2
+      anisoLevel: 1
+      compressionQuality: 50
+      maxTextureSize: 2048
+      textureCompression: 0
+      filterMode: 1
+      generateMipMaps: 0
+      readable: 0
+      crunchedCompression: 0
+      sRGB: 1
+    platformSettings: []
+    packingSettings:
+      serializedVersion: 2
+      padding: 4
+      blockOffset: 1
+      allowAlphaSplitting: 0
+      enableRotation: 1
+      enableTightPacking: 1
+      enableAlphaDilation: 0
+    secondaryTextureSettings: {}
+    variantMultiplier: 1
+    packables:
+    - {fileID: 102900000, guid: 8da8d6c50bcd5494b9eb3ef2fbe8cad4, type: 3}
+    bindAsDefault: 1
+    isAtlasV2: 0
+    cachedData: {fileID: 0}
+    packedSpriteRenderDataKeys:
+    - 8ecdc620c6fe6a245bdf41c252cf2252: 21300000
+    - 0a282616253efd746ac26ef62eaf8af8: 21300000
+    - c90503e660e4d5a458109e50301c0b5c: 21300000
+    - d0c778d90d42e3145899030048fef006: 21300000
+    - a01295f9933b18c47b0f73cbb1536b8d: 21300000
+    - 2203b15aa503bd94ea04e4ea21d1b0fc: 21300000
+    - 088488bdbbb6b374cb8e7d0b38d5e4ea: 21300000
+  m_MasterAtlas: {fileID: 0}
+  m_PackedSprites:
+  - {fileID: 21300000, guid: 8ecdc620c6fe6a245bdf41c252cf2252, type: 3}
+  - {fileID: 21300000, guid: 0a282616253efd746ac26ef62eaf8af8, type: 3}
+  - {fileID: 21300000, guid: c90503e660e4d5a458109e50301c0b5c, type: 3}
+  - {fileID: 21300000, guid: d0c778d90d42e3145899030048fef006, type: 3}
+  - {fileID: 21300000, guid: a01295f9933b18c47b0f73cbb1536b8d, type: 3}
+  - {fileID: 21300000, guid: 2203b15aa503bd94ea04e4ea21d1b0fc, type: 3}
+  - {fileID: 21300000, guid: 088488bdbbb6b374cb8e7d0b38d5e4ea, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - Ingame_Loose
+  - Ingame_Info
+  - Ingame_RoomTitle
+  - Ingame_OmokBoard
+  - Ingame_Win
+  - Ingame_Board
+  - Ingame_DialogPanel
+  m_RenderDataMap: {}
+  m_Tag: Atlas_UI_Ingame
+  m_IsVariant: 0

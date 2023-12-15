@@ -1,0 +1,69 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!687078895 &4343727234628468602
+SpriteAtlas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Atlas_UI_Button
+  m_EditorData:
+    serializedVersion: 2
+    textureSettings:
+      serializedVersion: 2
+      anisoLevel: 1
+      compressionQuality: 50
+      maxTextureSize: 2048
+      textureCompression: 0
+      filterMode: 1
+      generateMipMaps: 0
+      readable: 0
+      crunchedCompression: 0
+      sRGB: 1
+    platformSettings: []
+    packingSettings:
+      serializedVersion: 2
+      padding: 4
+      blockOffset: 1
+      allowAlphaSplitting: 0
+      enableRotation: 1
+      enableTightPacking: 1
+      enableAlphaDilation: 0
+    secondaryTextureSettings: {}
+    variantMultiplier: 1
+    packables:
+    - {fileID: 102900000, guid: ba1aba8b41ddfdc43917cc1ebcdd7018, type: 3}
+    bindAsDefault: 1
+    isAtlasV2: 0
+    cachedData: {fileID: 0}
+    packedSpriteRenderDataKeys:
+    - 1e3a6961020c399449ac437092bea5a9: 21300000
+    - 48725274254eb5f46bb92476f8081157: 21300000
+    - ac09e5674ea3dc043b0e481c55676413: 21300000
+    - 6a2e45086897c994a93b12122887b645: 21300000
+    - c8d90b79346391d4bb96258d0897f8ff: 21300000
+    - cab1d75cbe6ed7244b48ea38125ad1ac: 21300000
+    - f8b1511d5043d114eb5d8564dfce98df: 21300000
+    - efc95faec37eb44409c76fab5641392c: 21300000
+  m_MasterAtlas: {fileID: 0}
+  m_PackedSprites:
+  - {fileID: 21300000, guid: 1e3a6961020c399449ac437092bea5a9, type: 3}
+  - {fileID: 21300000, guid: 48725274254eb5f46bb92476f8081157, type: 3}
+  - {fileID: 21300000, guid: ac09e5674ea3dc043b0e481c55676413, type: 3}
+  - {fileID: 21300000, guid: 6a2e45086897c994a93b12122887b645, type: 3}
+  - {fileID: 21300000, guid: c8d90b79346391d4bb96258d0897f8ff, type: 3}
+  - {fileID: 21300000, guid: cab1d75cbe6ed7244b48ea38125ad1ac, type: 3}
+  - {fileID: 21300000, guid: f8b1511d5043d114eb5d8564dfce98df, type: 3}
+  - {fileID: 21300000, guid: efc95faec37eb44409c76fab5641392c, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - Button_Box
+  - Button_Exit_
+  - Btn_CreateRoom
+  - Button_OmokItem
+  - Button_Start
+  - Button_Start01
+  - Button_abstention
+  - Button_Start02
+  m_RenderDataMap: {}
+  m_Tag: Atlas_UI_Button
+  m_IsVariant: 0

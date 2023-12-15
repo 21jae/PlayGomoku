@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!687078895 &4343727234628468602
+SpriteAtlas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Atlas_Character
+  m_EditorData:
+    serializedVersion: 2
+    textureSettings:
+      serializedVersion: 2
+      anisoLevel: 1
+      compressionQuality: 50
+      maxTextureSize: 2048
+      textureCompression: 0
+      filterMode: 1
+      generateMipMaps: 0
+      readable: 0
+      crunchedCompression: 0
+      sRGB: 1
+    platformSettings: []
+    packingSettings:
+      serializedVersion: 2
+      padding: 4
+      blockOffset: 1
+      allowAlphaSplitting: 0
+      enableRotation: 1
+      enableTightPacking: 1
+      enableAlphaDilation: 0
+    secondaryTextureSettings: {}
+    variantMultiplier: 1
+    packables:
+    - {fileID: 102900000, guid: ebd0c3101d871a44db29d2ba9cf5ff64, type: 3}
+    bindAsDefault: 1
+    isAtlasV2: 0
+    cachedData: {fileID: 0}
+    packedSpriteRenderDataKeys:
+    - a741b43b4b632154da37cfb6c71d8482: 21300000
+    - 180a7b6c465c0b74dbaa93f395ff4fc2: 21300000
+    - 52e714ae7490a244eb57ec4fca5444af: 21300000
+  m_MasterAtlas: {fileID: 0}
+  m_PackedSprites:
+  - {fileID: 21300000, guid: a741b43b4b632154da37cfb6c71d8482, type: 3}
+  - {fileID: 21300000, guid: 180a7b6c465c0b74dbaa93f395ff4fc2, type: 3}
+  - {fileID: 21300000, guid: 52e714ae7490a244eb57ec4fca5444af, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - Character_Rooney
+  - Chracter_Npc02Name
+  - Character_Rudy
+  m_RenderDataMap: {}
+  m_Tag: Atlas_Character
+  m_IsVariant: 0
